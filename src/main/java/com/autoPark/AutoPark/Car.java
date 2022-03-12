@@ -18,12 +18,12 @@ public class Car {
     public Car() {
     }
 
-    public Car(String carId, Object category) {
+    public Car(String carId, Category category) {
         carId = carId;
         category = category;
     }
 
-    public Car(String carId, Object category, long driverId) {
+    public Car(String carId, Category category, long driverId) {
         carId = carId;
         category = category;
         driverId = driverId;
