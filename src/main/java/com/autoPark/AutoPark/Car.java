@@ -12,7 +12,7 @@ public class Car {
     private long Id;
 
     private String carId;
-    private Object category;
+    private Category category;
     private Long driverId = null;
 
     public Car() {
