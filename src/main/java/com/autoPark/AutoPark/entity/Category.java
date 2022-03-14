@@ -1,4 +1,4 @@
-package com.autoPark.AutoPark;
+package com.autoPark.AutoPark.entity;
 
 public enum Category {
     MOTORCYCLE,
