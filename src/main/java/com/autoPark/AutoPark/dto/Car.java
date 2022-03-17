@@ -1,6 +1,6 @@
 package com.autoPark.AutoPark.dto;
 
-import com.autoPark.AutoPark.Category;
+import com.autoPark.AutoPark.category.Category;
 
 import javax.persistence.*;
 import javax.validation.constraints.Pattern;
@@ -11,7 +11,7 @@ import java.util.Objects;
  * @author SanjarU
  */
 @Entity
-@Table(name = "Car",uniqueConstraints = @UniqueConstraint(columnNames={"car_gov_num"}))
+@Table(name = "car",uniqueConstraints = @UniqueConstraint(columnNames={"car_gov_num"}))
 public class Car {
     @Id
     @SequenceGenerator( name = "carIdGenerator",
@@ -31,9 +31,10 @@ public class Car {
     @Column(name = "car_category")
     private Category category;
 
-    @Column(name = "owner_id")
-    private Long driverId = null;
-
+    /*@ManyToOne
+    @JoinColumn(name = "driver_id")
+    private Driver driver;
+*/
     public Car() {
     }
 
@@ -42,10 +43,10 @@ public class Car {
         this.category=category;
     }
 
-    public Car(String carId, Category category, Long driverId) {
+    public Car(String carId, Category category, Driver driver) {
         this.carId = carId;
         this.category = category;
-        this.driverId = driverId;
+     /*   this.driver=driver;*/
     }
 
 
@@ -69,25 +70,25 @@ public class Car {
         this.category = category;
     }
 
-    public Long getDriverId() {
-        return driverId;
+   /* public Driver getDriver() {
+        return driver;
     }
 
-    public void setDriverId(Long driverId) {
-        this.driverId = driverId;
-    }
+    public void setDriver(Driver driver) {
+        this.driver=driver;
+    }*/
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Car car = (Car) o;
-        return Objects.equals(id, car.id) && Objects.equals(carId, car.carId) && category == car.category && Objects.equals(driverId, car.driverId);
+        return Objects.equals(id, car.id) && Objects.equals(carId, car.carId) && category == car.category /* && Objects.equals(driver, car.driver)*/;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, carId, category, driverId);
+        return Objects.hash(id, carId, category/*, driver*/);
     }
 
     @Override
@@ -96,7 +97,7 @@ public class Car {
                 "id=" + id +
                 ", carId='" + carId + '\'' +
                 ", category=" + category +
-                ", driverId=" + driverId +
+                ", driverId=" + /*driver*/ +
                 '}';
     }
 }
