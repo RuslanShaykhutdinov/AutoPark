@@ -12,6 +12,7 @@ public class RestError {
     private int error;
     @Value("")
     private String errMessage;
+    @Value("null")
     private Object data;
 
     public RestError() {

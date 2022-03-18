@@ -1,25 +1,47 @@
 package com.autoPark.AutoPark.controller;
 
-import com.autoPark.AutoPark.category.Category;
-import com.autoPark.AutoPark.dto.Driver;
+import com.autoPark.AutoPark.dto.Car;
 import com.autoPark.AutoPark.service.CarService;
 import com.autoPark.AutoPark.utils.RestError;
-import org.apache.tomcat.util.json.JSONParser;
-import org.apache.tomcat.util.json.ParseException;
-import org.springframework.http.HttpStatus;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.LinkedHashMap;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/Car")
 public class CarController {
+    JsonParser parser = new JsonParser();
     private final CarService carService;
-
     public CarController(CarService carService) {
         this.carService = carService;
     }
 
+    @PostMapping(value = "registration")
+    public ResponseEntity<RestError> registration(@RequestBody String json)  {
+        try {
+            JsonObject jo = parser.parse(json).getAsJsonObject();
+            Car car = new Car(
+                    jo.get("carId").getAsString(),
+                    carService.toCategory(jo.get("category").getAsString().toUpperCase(Locale.ROOT))
+            );
+            if (carService.registration(car) == null)
+                return ResponseEntity.badRequest().body(new RestError(1, "Машина уже имеется"));
+            return ResponseEntity.ok(new RestError(car));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new RestError(1, "не правильные данные"));
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<RestError> getAll() {
+        try {
+            return ResponseEntity.ok(new RestError(carService.getAll()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new RestError(1, "Ошибка"));
+        }
+    }
 
 }

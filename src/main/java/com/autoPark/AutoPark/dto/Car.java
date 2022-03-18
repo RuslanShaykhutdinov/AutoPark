@@ -8,17 +8,19 @@ import java.util.Objects;
 
 /**
  * Класс отвечающий за создание машины
+ *
  * @author SanjarU
  */
 @Entity
-@Table(name = "car",uniqueConstraints = @UniqueConstraint(columnNames={"car_gov_num"}))
+@Table(name = "car", uniqueConstraints = @UniqueConstraint(columnNames = {"car_gov_num"}))
 public class Car {
+    @Column(name = "id")
     @Id
-    @SequenceGenerator( name = "carIdGenerator",
-                        sequenceName = "car_id_seq",
-                        schema = "public",
-                        initialValue = 5,
-                        allocationSize = 35
+    @SequenceGenerator(name = "carIdGenerator",
+            sequenceName = "car_id_seq",
+            schema = "public",
+            initialValue = 5,
+            allocationSize = 35
     )
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "carIdGenerator")
     private Long id;
@@ -31,8 +33,11 @@ public class Car {
     @Column(name = "car_category")
     private Category category;
 
-    /*@ManyToOne
-    @JoinColumn(name = "driver_id")
+    @Column(name = "owner_id")
+    private Long driverId = null;
+
+    /*@ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", referencedColumnName = "id", updatable = false, insertable = false)
     private Driver driver;
 */
     public Car() {
@@ -40,13 +45,13 @@ public class Car {
 
     public Car(String carId, Category category) {
         this.carId = carId;
-        this.category=category;
+        this.category = category;
     }
 
-    public Car(String carId, Category category, Driver driver) {
+    public Car(String carId, Category category, Long driverId) {
         this.carId = carId;
-        this.category = category;
-     /*   this.driver=driver;*/
+        this.category=category;
+        this.driverId=driverId;
     }
 
 
@@ -70,25 +75,25 @@ public class Car {
         this.category = category;
     }
 
-   /* public Driver getDriver() {
-        return driver;
+    public Long getDriverId() {
+        return driverId;
     }
 
-    public void setDriver(Driver driver) {
-        this.driver=driver;
-    }*/
+    public void setDriverId(Long driverId) {
+        this.driverId = driverId;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Car car = (Car) o;
-        return Objects.equals(id, car.id) && Objects.equals(carId, car.carId) && category == car.category /* && Objects.equals(driver, car.driver)*/;
+        return Objects.equals(id, car.id) && Objects.equals(carId, car.carId) && category == car.category && Objects.equals(driverId, car.driverId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, carId, category/*, driver*/);
+        return Objects.hash(id, carId, category,driverId);
     }
 
     @Override
@@ -97,7 +102,7 @@ public class Car {
                 "id=" + id +
                 ", carId='" + carId + '\'' +
                 ", category=" + category +
-                ", driverId=" + /*driver*/ +
+                ", driverId=" + driverId +
                 '}';
     }
 }
