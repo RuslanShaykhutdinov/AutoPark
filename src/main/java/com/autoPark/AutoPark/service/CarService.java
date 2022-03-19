@@ -5,6 +5,9 @@ import com.autoPark.AutoPark.dto.Car;
 import com.autoPark.AutoPark.repos.CarRepo;
 import org.springframework.stereotype.Service;
 
+
+import java.util.List;
+
 import static com.autoPark.AutoPark.category.Category.*;
 
 @Service
@@ -15,22 +18,27 @@ public class CarService {
         this.carRepo = carRepo;
     }
 
-    public Car registration(Car car)   {
+
+    public Boolean registration(Car car)   {
         if (carRepo.findByCarId(car.getCarId())!=null)
-            return null;
-        return carRepo.save(car);
+            return false;
+        carRepo.save(car);
+        return true;
     }
 
-    public Iterable<Car> getAll() {
-        return carRepo.findAll();
+
+ public List<Car> getAll() {
+        return (List<Car>) carRepo.findAll();
     }
 
     public Category toCategory(String str) {
-        if (str.equals("MOTORCYCLE")) return MOTORCYCLE;
-        if (str.equals("CAR")) return CAR;
-        if (str.equals("TRUCK")) return TRUCK;
-        if (str.equals("BUS")) return BUS;
-        if (str.equals("TRAILER")) return TRAILER;
-        return null;
+        switch (str){
+            case "MOTORCYCLE": return MOTORCYCLE;
+            case "CAR": return CAR;
+            case "TRUCK": return TRUCK;
+            case "BUS": return BUS;
+            case "TRAILER": return TRAILER;
+            default: return null;
+        }
     }
 }
