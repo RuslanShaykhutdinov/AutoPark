@@ -6,4 +6,9 @@ public enum Category {
     TRUCK,
     BUS,
     TRAILER
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }
