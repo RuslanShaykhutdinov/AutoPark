@@ -1,6 +1,6 @@
 package com.autoPark.AutoPark.dto;
 
-import com.autoPark.AutoPark.Category;
+import com.autoPark.AutoPark.category.Category;
 
 import javax.persistence.*;
 import javax.validation.constraints.Pattern;
