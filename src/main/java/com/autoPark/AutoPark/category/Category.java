@@ -5,7 +5,7 @@ public enum Category {
     CAR,
     TRUCK,
     BUS,
-    TRAILER
+    TRAILER;
 
     @Override
     public String toString() {
