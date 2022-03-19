@@ -13,6 +13,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "driver",uniqueConstraints = @UniqueConstraint(columnNames={"passport_id"}))
 public class Driver {
+    @Column(name = "id")
     @Id
     @SequenceGenerator( name = "driverIdGenerator",
             sequenceName = "driver_id_seq",

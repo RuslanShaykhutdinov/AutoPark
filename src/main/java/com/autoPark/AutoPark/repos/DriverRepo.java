@@ -6,7 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 
 
 public interface DriverRepo extends CrudRepository<Driver,Long> {
-    @Query("Select c FROM Car c WHERE c.carId = ?1")
+    @Query("Select c FROM driver c WHERE c.passport_id = ?1")
     Driver findByPassportId(String passportId);
     /*    @Query("select u from driver u where u.driver_category = :category")
     List<Driver> findByCategory(Category category);*/
