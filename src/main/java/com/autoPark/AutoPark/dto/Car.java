@@ -1,6 +1,6 @@
 package com.autoPark.AutoPark.dto;
 
-import com.autoPark.AutoPark.Category;
+import com.autoPark.AutoPark.category.Category;
 
 import javax.persistence.*;
 import javax.validation.constraints.Pattern;
@@ -13,6 +13,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "Car",uniqueConstraints = @UniqueConstraint(columnNames={"car_gov_num"}))
 public class Car {
+    @Column(name = "id")
     @Id
     @SequenceGenerator( name = "carIdGenerator",
                         sequenceName = "car_id_seq",
@@ -33,7 +34,10 @@ public class Car {
 
     @Column(name = "owner_id")
     private Long driverId = null;
-
+    /*@ManyToOne(fetch = FetchType.LAZY)
+     @JoinColumn(name = "owner_id", referencedColumnName = "id", updatable = false, insertable = false)
+     private Driver driver;
+ */
     public Car() {
     }
 
