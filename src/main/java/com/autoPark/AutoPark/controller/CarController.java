@@ -19,7 +19,7 @@ public class CarController {
         this.carService = carService;
     }
 
-    @PostMapping(value = "registration")
+    @PostMapping(value = "/registration")
     public ResponseEntity<RestError> registration(@RequestBody String json)  {
         try {
             JsonObject jo = parser.parse(json).getAsJsonObject();
@@ -27,9 +27,14 @@ public class CarController {
                     jo.get("carId").getAsString(),
                     carService.toCategory(jo.get("category").getAsString().toUpperCase(Locale.ROOT))
             );
-            Long driverId=jo.get("driverIr").getAsLong();
-            if (driverId!=null) car.setDriverId(driverId);
-            if (carService.registration(car) == null)
+            /*try {
+                Long driverId=jo.get("driverId").getAsLong();
+                car.setDriverId(driverId);
+            } catch (NullPointerException e){
+                e.getMessage();
+            }*/
+
+            if (carService.registration(car) == false)
                 return ResponseEntity.badRequest().body(new RestError(1, "Машина уже имеется"));
             return ResponseEntity.ok(new RestError(car));
         } catch (Exception e) {
