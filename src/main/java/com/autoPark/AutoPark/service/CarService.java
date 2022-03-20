@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.autoPark.AutoPark.category.Category.*;
 
@@ -25,7 +26,22 @@ public class CarService {
         carRepo.save(car);
         return true;
     }
-
+    public Boolean delete(Long Id){
+        if(carRepo.findById(Id)!=null){
+            carRepo.deleteById(Id);
+            return true;
+        }else{
+            return false;
+        }
+    }
+    public Car getCarById(Long Id){
+        return carRepo.findByid(Id);
+    }
+    public Car editCarById(Car car,String newCarId,Category category){
+        car.setCarId(newCarId);
+        car.setCategory(category);
+        return car;
+    }
 
  public List<Car> getAll() {
         return (List<Car>) carRepo.findAll();
