@@ -34,12 +34,10 @@ public class CarService {
             return false;
         }
     }
-    public Car getCarById(Long Id){
-        return carRepo.findByid(Id);
-    }
-    public Car editCarById(Car car,String newCarId,Category category){
+
+    public Car editCarById(Car car,String newCarId){
         car.setCarId(newCarId);
-        car.setCategory(category);
+        carRepo.save(car);
         return car;
     }
 

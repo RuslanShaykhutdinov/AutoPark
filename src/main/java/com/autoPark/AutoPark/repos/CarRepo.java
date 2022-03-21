@@ -9,6 +9,4 @@ import org.springframework.stereotype.Repository;
 public interface CarRepo extends CrudRepository<Car,Long> {
     @Query("Select c FROM Car c WHERE c.carId = ?1")
     Car findByCarId(String carId);
-    @Query("Select c FROM Car c Where c.id=?1")
-    Car findByid(Long id);
 }
