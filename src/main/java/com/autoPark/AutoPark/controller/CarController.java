@@ -41,6 +41,43 @@ public class CarController {
             return ResponseEntity.badRequest().body(new RestError(1, "не правильные данные"));
         }
     }
+    @PutMapping(value = "/manage")
+    public ResponseEntity<RestError> delete(@RequestBody String json){
+        try {
+            JsonObject jo = parser.parse(json).getAsJsonObject();
+            if (!carService.delete(jo.get("Id").getAsLong())){
+                return ResponseEntity.badRequest().body(new RestError(1,"Ошибка"));
+            }else {
+                return ResponseEntity.ok(new RestError(carService.delete(jo.get("Id").getAsLong())));
+            }
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new RestError(1,"Ошибка"));
+        }
+    }
+    @PutMapping(value = "/manage")
+    public ResponseEntity<RestError> editCarById(@RequestBody String json){
+        try{
+            JsonObject jo = parser.parse(json).getAsJsonObject();
+            Car car = carService.editCarById(
+                        carService.getCarById(jo.get("Id").getAsLong()),
+                        jo.get("newCarId").getAsString(),
+                        carService.toCategory(jo.get("category").getAsString().toUpperCase(Locale.ROOT))
+            );
+            return ResponseEntity.ok(new RestError(car));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new RestError(1,"Ошибка"));
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<RestError> getCarById(@RequestBody String json){
+        try{
+            JsonObject jo = parser.parse(json).getAsJsonObject();
+            return ResponseEntity.ok(new RestError(carService.getCarById(jo.get("Id").getAsLong())));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new RestError(1,"Ошибка"));
+        }
+    }
 
     @GetMapping("/all")
     public ResponseEntity<RestError> getAll() {
