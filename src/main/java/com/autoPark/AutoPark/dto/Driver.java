@@ -24,15 +24,15 @@ public class Driver {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "driverIdGenerator")
     private Long id;
 
-    @Column(name = "passport_id")
+    @Column(name = "passport_id",nullable = false)
     @Pattern(regexp = "[A-Z]{2}[0-9]{7}",
             message = "passportId should be in right form")
     private String passportId;
 
-    @Column(name = "name")
+    @Column(name = "name",nullable = false)
     private String name;
 
-    @Column(name = "driver_category")
+    @Column(name = "driver_category",nullable = false)
     private Category category;
 
 /*

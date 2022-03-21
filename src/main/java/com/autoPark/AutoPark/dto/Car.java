@@ -24,12 +24,12 @@ public class Car {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "carIdGenerator")
     private Long id;
 
-    @Column(name = "car_gov_num")
+    @Column(name = "car_gov_num",nullable = false)
     @Pattern(regexp = "((01)|(10)|(20)|(30)|(40)|(60)|(80)|(90))(([A-Z]+[0-9]{3})+([A-Z]{2})|([0-9]{3}[A-Z]{3}))",
             message = "Car ID should be in right form")
     private String carId;
 
-    @Column(name = "car_category")
+    @Column(name = "car_category",nullable = false)
     private Category category;
 
     @Column(name = "owner_id")
