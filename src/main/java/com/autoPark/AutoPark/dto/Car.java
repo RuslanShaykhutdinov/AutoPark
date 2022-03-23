@@ -34,10 +34,6 @@ public class Car {
 
     @Column(name = "owner_id")
     private Long driverId = null;
-    /*@ManyToOne(fetch = FetchType.LAZY)
-     @JoinColumn(name = "owner_id", referencedColumnName = "id", updatable = false, insertable = false)
-     private Driver driver;
- */
     public Car() {
     }
 
