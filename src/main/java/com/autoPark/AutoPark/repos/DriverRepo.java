@@ -11,6 +11,4 @@ import java.util.List;
 public interface DriverRepo extends CrudRepository<Driver,Long> {
     @Query("Select d FROM Driver d WHERE d.passportId = ?1")
     Driver findByPassportId(String passportId);
-    @Query(value = "Select d FROM Driver d WHERE d.driver_category = ?1" , nativeQuery = true)
-    List<Driver> findByCategory(String category);
 }

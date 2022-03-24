@@ -13,6 +13,8 @@ import com.google.gson.JsonParser;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 @RestController
@@ -38,11 +40,11 @@ public class CarController {
             String carId = jo.get("carId").getAsString();
             Category category = Category.valueOf(jo.get("category").getAsString().toUpperCase(Locale.ROOT));
             try {
-                String passportDriver = jo.get("passportDriver").getAsString();
-                Driver driver = driverRepo.findByPassportId(passportDriver);
+                Long driverId = jo.get("driverId").getAsLong();
+                Driver driver = driverRepo.findById(driverId).orElse(null);
                 if (driver != null) {
                     if (driver.getCategory().equals(category)) {
-                        Car car = new Car(carId, category, driver.getId());
+                        Car car = new Car(carId, category, driverId);
                         if (carService.registration(car))
                             return ResponseEntity.ok(new RestError(car));
                         return ResponseEntity.badRequest().body(new RestError(4, "Машина уже имеется"));
@@ -128,7 +130,11 @@ public class CarController {
         Car car = carRepo.findById(id).orElse(null);
         if (car!=null) {
             try {
-                return ResponseEntity.ok(new RestError(driverRepo.findByCategory(car.getCategory().toString())));
+                List<Driver> drivers=new ArrayList<Driver>();
+                driverRepo.findAll().forEach(driver -> {
+                    if (car.getCategory().equals(driver.getCategory())) drivers.add(driver);
+                });
+                return ResponseEntity.ok(new RestError(drivers));
             } catch (Exception e) {
                 return ResponseEntity.badRequest().body(new RestError(2, "Ошибка поиска по категориям"));
             }
