@@ -30,6 +30,7 @@ public class Car {
     private String carId;
 
     @Column(name = "car_category",nullable = false)
+    @Enumerated(EnumType.STRING)
     private Category category;
 
     @Column(name = "owner_id")

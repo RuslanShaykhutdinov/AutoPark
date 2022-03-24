@@ -33,6 +33,7 @@ public class Driver {
     private String name;
 
     @Column(name = "driver_category",nullable = false)
+    @Enumerated(EnumType.STRING)
     private Category category;
 
 

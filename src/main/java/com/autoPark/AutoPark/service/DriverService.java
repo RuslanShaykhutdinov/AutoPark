@@ -22,12 +22,11 @@ public class DriverService {
         return true;
     }
 
-    public Boolean editDriver(Long id, Driver driver) {
+    public Boolean editDriver(Long id, String passportId , String name) {
         Driver oldDriver = driverRepo.findById(id).orElse(null);
         if (oldDriver != null) {
-            oldDriver.setCategory(driver.getCategory());
-            oldDriver.setName(driver.getName());
-            oldDriver.setPassportId(driver.getPassportId());
+            oldDriver.setName(name);
+            oldDriver.setPassportId(passportId);
             driverRepo.save(oldDriver);
             return true;
         }
