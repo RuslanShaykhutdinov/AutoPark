@@ -21,11 +21,11 @@ import java.util.Locale;
 @RestController
 @RequestMapping("/Driver")
 public class DriverController {
-    JsonParser parser = new JsonParser();
+    JsonParser parser = new JsonParser(); //TODO вынести в Utils
     private final DriverRepo driverRepo;
     private final DriverService driverService;
     private final CarRepo carRepo;
-    private final CarService carService;
+    private final CarService carService; //TODO убрать не используется
 
     public DriverController(DriverRepo driverRepo, DriverService driverService, CarRepo carRepo, CarService carService) {
         this.driverRepo = driverRepo;
@@ -33,6 +33,7 @@ public class DriverController {
         this.carRepo = carRepo;
         this.carService = carService;
     }
+    //TODO добавить логи ко всем методам и сделать у каждой ошибки свой номер!
 
     @PostMapping(value = "/registration")
     public ResponseEntity<RestError> registration(@RequestBody String json) {
@@ -40,7 +41,7 @@ public class DriverController {
             JsonObject jo = parser.parse(json).getAsJsonObject();
             String passportId = jo.get("passportId").getAsString();
             String name = jo.get("name").getAsString();
-            Category category = Category.valueOf(jo.get("category").getAsString().toUpperCase(Locale.ROOT));
+            Category category = Category.valueOf(jo.get("category").getAsString().toUpperCase(Locale.ROOT)); //TODO добавить проверку что не нулл
                 Driver driver = new Driver(passportId, name, category);
                 if (driverService.registration(driver)) return ResponseEntity.ok(new RestError(driver));
                 return ResponseEntity.badRequest().body(new RestError(3, "Уже имеется"));
@@ -77,7 +78,7 @@ public class DriverController {
             String passportId = jo.get("passportId").getAsString();
             String name = jo.get("name").getAsString();
             if (passportId!=null && name!=null) {
-                if (driverService.editDriver(id, passportId , name)) return ResponseEntity.ok(new RestError("Ok"));
+                if (driverService.editDriver(id, passportId , name)) return ResponseEntity.ok(new RestError("Ok")); //TODO return object instead
                 return ResponseEntity.badRequest().body(new RestError(3, "Водителя не существует"));
             }
             return ResponseEntity.badRequest().body(new RestError(2, "Не верные данные"));
@@ -100,11 +101,11 @@ public class DriverController {
 
     @GetMapping(value = "/withoutCars")
     public ResponseEntity<RestError> withoutCars() {
-        HashSet<Long> driversWithCars= new HashSet<>();
+        HashSet<Long> driversWithCars= new HashSet<>(); //TODO use set instead and do logic in service
         carRepo.carsWithDriver().forEach(car -> {
             driversWithCars.add(car.getDriverId());
         });
-        ArrayList<Driver> drivers=new ArrayList<>();
+        ArrayList<Driver> drivers=new ArrayList<>(); // may be List will be better
         driverRepo.findAll().forEach(driver -> {
             if (!(driversWithCars.contains(driver.getId())))
                 drivers.add(driver);

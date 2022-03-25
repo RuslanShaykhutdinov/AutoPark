@@ -20,11 +20,11 @@ import java.util.Locale;
 @RestController
 @RequestMapping("/Car")
 public class CarController {
-    JsonParser parser = new JsonParser();
+    JsonParser parser = new JsonParser();  //TODO вынести в Utils
     private final CarService carService;
     private final CarRepo carRepo;
     private final DriverRepo driverRepo;
-    private final DriverService driverService;
+    private final DriverService driverService; //TODO убрать не исользуется
 
     public CarController(CarService carService, CarRepo carRepo, DriverRepo driverRepo, DriverService driverService) {
         this.carService = carService;
@@ -33,12 +33,14 @@ public class CarController {
         this.driverService = driverService;
     }
 
+    //TODO добавить логи ко всем методам и сделать у каждой ошибки свой номер!
+
     @PostMapping(value = "/registration")
     public ResponseEntity<RestError> registration(@RequestBody String json) {
         try {
             JsonObject jo = parser.parse(json).getAsJsonObject();
             String carId = jo.get("carId").getAsString();
-            Category category = Category.valueOf(jo.get("category").getAsString().toUpperCase(Locale.ROOT));
+            Category category = Category.valueOf(jo.get("category").getAsString().toUpperCase(Locale.ROOT)); //TODO добавить проверку что не нулл
             try {
                 Long driverId = jo.get("driverId").getAsLong();
                 Driver driver = driverRepo.findById(driverId).orElse(null);
@@ -80,7 +82,7 @@ public class CarController {
     @PutMapping(value = "/edit")
     public ResponseEntity<RestError> editCarById(@RequestBody String json) {
         JsonObject jo = parser.parse(json).getAsJsonObject();
-        Long id = jo.get("Id").getAsLong();
+        Long id = jo.get("Id").getAsLong(); // TODO use camelCase
         String newCarId = jo.get("newCarId").getAsString();
         Car oldCar = carRepo.findById(id).orElse(null);
         if (oldCar == null) {
@@ -113,7 +115,7 @@ public class CarController {
     @GetMapping("/all")
     public ResponseEntity<RestError> getAll() {
         try {
-            return ResponseEntity.ok(new RestError(carService.getAll()));
+            return ResponseEntity.ok(new RestError(carService.getAll())); //TODO query to repo instead of that
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new RestError(1, "Ошибка"));
         }
