@@ -113,7 +113,6 @@ public class DriverController {
         return ResponseEntity.ok(new RestError(drivers));
     }
 
-
     @DeleteMapping(value = "/delete")
     public ResponseEntity<RestError> deleteDriver(@RequestParam Long id) {
         Driver driver = driverRepo.findById(id).orElse(null);
@@ -127,5 +126,58 @@ public class DriverController {
             return ResponseEntity.ok(new RestError("OK"));
         }
         return ResponseEntity.badRequest().body(new RestError(1, "Несуществующий водитель"));
+    }
+      
+    @GetMapping(value = "/driverCars")
+    public ResponseEntity<RestError> driverCars(@RequestParam Long Id){
+        List<Car> carsList = carRepo.findCarsByDriverId(Id);
+        if(carsList.isEmpty()){
+            return ResponseEntity.badRequest().body(new RestError(1,"У данного водителя нету автомобилей"));
+        }else{
+            return ResponseEntity.ok(new RestError(carsList));
+        }
+    }
+    
+    @PutMapping(value = "/pinDriver")
+    public ResponseEntity<RestError> pinDriver(@RequestBody String json){
+        JsonObject jo = parser.parse(json).getAsJsonObject();
+        String passportId = jo.get("PassportId").getAsString();
+        String carId = jo.get("CarId").getAsString();
+        Car car = carRepo.findByCarId(carId);
+        Driver driver = driverRepo.findByPassportId(passportId);
+        if (passportId == null){
+            return ResponseEntity.badRequest().body(new RestError(1,"Введите номер пасспорта"));
+        }else if(driver == null){
+            return ResponseEntity.badRequest().body(new RestError(2,"Такого водителя не существует"));
+        }
+        if(carId == null){
+            return ResponseEntity.badRequest().body(new RestError(3,"Введите номер автомобиля"));
+        }else if(car == null){
+            return ResponseEntity.badRequest().body(new RestError(4,"Данного автомобиля не существует"));
+        }
+        if(!car.getCategory().equals(driver.getCategory())){
+            return ResponseEntity.badRequest().body(new RestError(5,"Данный водитель не может водить данный автомобиль"));
+        }
+        try {
+             driverService.pinDriverToCar(car,driver);
+             return ResponseEntity.ok(new RestError("OK"));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new RestError(6,"Ошибка"));
+        }
+    }
+
+    @PutMapping(value = "/unpinDriver")
+    public ResponseEntity<RestError> unpinDriver(@RequestBody String json){
+        JsonObject jo = parser.parse(json).getAsJsonObject();
+        String passportId = jo.get("PassportId").getAsString();
+        String carId = jo.get("CarId").getAsString();
+        Car car = carRepo.findByCarId(carId);
+        Driver driver = driverRepo.findByPassportId(passportId);
+        if(car.getDriverId() == driver.getId()){
+            driverService.unpinDriverFromCar(car);
+            return ResponseEntity.ok(new RestError("OK"));
+        }else{
+            return ResponseEntity.badRequest().body(new RestError(1,"Ошибка"));
+        }
     }
 }
