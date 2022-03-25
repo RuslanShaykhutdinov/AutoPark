@@ -34,6 +34,7 @@ public class DriverController {
         this.carService = carService;
     }
     //TODO добавить логи ко всем методам и сделать у каждой ошибки свой номер!
+    //TODO use kebab-case for controller methods i.e /get-by-id
 
     @PostMapping(value = "/registration")
     public ResponseEntity<RestError> registration(@RequestBody String json) {
@@ -129,7 +130,7 @@ public class DriverController {
     }
       
     @GetMapping(value = "/driverCars")
-    public ResponseEntity<RestError> driverCars(@RequestParam Long Id){
+    public ResponseEntity<RestError> driverCars(@RequestParam Long Id){ //TODO use camelCase for params
         List<Car> carsList = carRepo.findCarsByDriverId(Id);
         if(carsList.isEmpty()){
             return ResponseEntity.badRequest().body(new RestError(1,"У данного водителя нету автомобилей"));
@@ -141,18 +142,18 @@ public class DriverController {
     @PutMapping(value = "/pinDriver")
     public ResponseEntity<RestError> pinDriver(@RequestBody String json){
         JsonObject jo = parser.parse(json).getAsJsonObject();
-        String passportId = jo.get("PassportId").getAsString();
-        String carId = jo.get("CarId").getAsString();
+        String passportId = jo.get("PassportId").getAsString(); //TODO use camelCase
+        String carId = jo.get("CarId").getAsString(); //TODO use camelCase
         Car car = carRepo.findByCarId(carId);
         Driver driver = driverRepo.findByPassportId(passportId);
-        if (passportId == null){
+        if (passportId == null){  //TODO убрать не нужно
             return ResponseEntity.badRequest().body(new RestError(1,"Введите номер пасспорта"));
-        }else if(driver == null){
+        }else if(driver == null){ //TODO это оставь
             return ResponseEntity.badRequest().body(new RestError(2,"Такого водителя не существует"));
         }
-        if(carId == null){
+        if(carId == null){ //TODO убрать не нужно
             return ResponseEntity.badRequest().body(new RestError(3,"Введите номер автомобиля"));
-        }else if(car == null){
+        }else if(car == null){ //TODO это оставь
             return ResponseEntity.badRequest().body(new RestError(4,"Данного автомобиля не существует"));
         }
         if(!car.getCategory().equals(driver.getCategory())){
@@ -169,11 +170,11 @@ public class DriverController {
     @PutMapping(value = "/unpinDriver")
     public ResponseEntity<RestError> unpinDriver(@RequestBody String json){
         JsonObject jo = parser.parse(json).getAsJsonObject();
-        String passportId = jo.get("PassportId").getAsString();
-        String carId = jo.get("CarId").getAsString();
+        String passportId = jo.get("PassportId").getAsString(); //TODO use camelCase
+        String carId = jo.get("CarId").getAsString(); //TODO use camelCase
         Car car = carRepo.findByCarId(carId);
         Driver driver = driverRepo.findByPassportId(passportId);
-        if(car.getDriverId() == driver.getId()){
+        if(car.getDriverId() == driver.getId()){ //TODO equals
             driverService.unpinDriverFromCar(car);
             return ResponseEntity.ok(new RestError("OK"));
         }else{
