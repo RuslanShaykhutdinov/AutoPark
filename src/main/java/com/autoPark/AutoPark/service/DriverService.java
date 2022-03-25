@@ -21,17 +21,13 @@ public class DriverService {
         car.setDriverId(driver.getId());
         carRepo.save(car);
     }
-    public void unpinDriverFromCar(Car car){
+
+    public void unpinDriverFromCar(Car car) {
         car.setDriverId(null);
         carRepo.save(car);
-
-    private final CarRepo carRepo; //TODO убрать не используется
-
-    public DriverService(DriverRepo driverRepo, CarRepo carRepo) {
-        this.driverRepo = driverRepo;
-        this.carRepo = carRepo;
     }
-    public Boolean registration(Driver driver) { // TODO use primitives
+
+    public Boolean registration (Driver driver){ // TODO use primitives
         if (driverRepo.findByPassportId(driver.getPassportId()) != null) {
             return false;
         }
@@ -39,7 +35,7 @@ public class DriverService {
         return true;
     }
 
-    public Boolean editDriver(Long id, String passportId , String name) { //TODO improve
+    public Boolean editDriver (Long id, String passportId, String name){ //TODO improve
         Driver oldDriver = driverRepo.findById(id).orElse(null);
         if (oldDriver != null) {
             oldDriver.setName(name);
