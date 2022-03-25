@@ -45,14 +45,4 @@ public class CarService {
         return (List<Car>) carRepo.findAll();
     }
 
-    public Category toCategory(String str) {
-        switch (str){
-            case "MOTORCYCLE": return MOTORCYCLE;
-            case "CAR": return CAR;
-            case "TRUCK": return TRUCK;
-            case "BUS": return BUS;
-            case "TRAILER": return TRAILER;
-            default: return null;
-        }
-    }
 }

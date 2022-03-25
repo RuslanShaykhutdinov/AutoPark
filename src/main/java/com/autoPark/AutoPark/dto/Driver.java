@@ -33,12 +33,9 @@ public class Driver {
     private String name;
 
     @Column(name = "driver_category",nullable = false)
+    @Enumerated(EnumType.STRING)
     private Category category;
 
-/*
-    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ArrayList<Car> cars;
-*/
 
     public Driver() {
     }
@@ -92,12 +89,12 @@ public class Driver {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Driver driver = (Driver) o;
-        return Objects.equals(id, driver.id) && Objects.equals(passportId, driver.passportId) && Objects.equals(name, driver.name) && category == driver.category /*&& Objects.equals(cars, driver.cars)*/;
+        return Objects.equals(id, driver.id) && Objects.equals(passportId, driver.passportId) && Objects.equals(name, driver.name) && category == driver.category;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, passportId, name, category /*,cars*/);
+        return Objects.hash(id, passportId, name, category);
     }
 
     @Override
@@ -107,7 +104,6 @@ public class Driver {
                 ", passportId='" + passportId + '\'' +
                 ", name='" + name + '\'' +
                 ", category=" + category +
-                ", cars=" + /*cars*/ +
                 '}';
     }
 }
