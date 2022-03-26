@@ -1,10 +1,10 @@
 package com.autoPark.AutoPark.service;
 
+import com.autoPark.AutoPark.category.Category;
 import com.autoPark.AutoPark.dto.Car;
 import com.autoPark.AutoPark.repos.CarRepo;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 @Service
 public class CarService {
@@ -15,19 +15,12 @@ public class CarService {
     }
 
 
-    public Boolean registration(Car car)   { // TODO use primitives
-        if (carRepo.findByCarId(car.getCarId())!=null)
-            return false;
+    public Car registration(String carId, Category category,Long driverId)   {
+        Car car=new Car(carId, category, driverId);
+        if (carRepo.findByCarId(carId)!=null)
+            return null;
         carRepo.save(car);
-        return true;
-    }
-    public Boolean delete(Long Id){   // TODO убрать если не ипользуется
-        if(carRepo.findById(Id)!=null){
-            carRepo.deleteById(Id);
-            return true;
-        }else{
-            return false;
-        }
+        return car;
     }
 
     public Car editCarById(Car car,String newCarId){
@@ -36,8 +29,5 @@ public class CarService {
         return car;
     }
 
- public List<Car> getAll() { // TODO убрать
-        return (List<Car>) carRepo.findAll();
-    }
 
 }
