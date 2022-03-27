@@ -21,10 +21,11 @@ import java.util.Locale;
 @RestController
 @RequestMapping("/Car")
 public class CarController {
-    private static final Logger log = LoggerFactory.getLogger(CarController.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(CarController.class);
     private final CarService carService;
     private final CarRepo carRepo;
     private final DriverRepo driverRepo;
+    private String errMess = "Unknown error";
 
     public CarController(CarService carService, CarRepo carRepo, DriverRepo driverRepo) {
         this.carService = carService;
@@ -32,17 +33,20 @@ public class CarController {
         this.driverRepo = driverRepo;
     }
 
-    //TODO добавить логи ко всем методам и сделать у каждой ошибки свой номер!
 
     @PostMapping(value = "/registration")
     public ResponseEntity<RestError> registration(@RequestBody String json) {
-        log.info("start registration");
+        log.info("> registration with json={}", json);
         try {
             JsonObject jo = Parser.parser.parse(json).getAsJsonObject();
             String carId = jo.get("carId").getAsString();
-            Category category = Category.valueOf(jo.get("category").getAsString().toUpperCase(Locale.ROOT));
+            Category category = null;
+            try {
+                category = Category.valueOf(jo.get("category").getAsString().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                log.warn("wrong category");
+            }
             if (carId != null && category != null) {
-                log.info("Data accepted");
                 try {
                     Long driverId = jo.get("driverId").getAsLong();
                     Driver driver = driverRepo.findById(driverId).orElse(null);
@@ -50,112 +54,151 @@ public class CarController {
                         if (driver.getCategory().equals(category)) {
                             Car car = carService.registration(carId, category, driverId);
                             if (car != null) {
-                                log.info("registration end");
+                                log.info("< registration");
                                 return ResponseEntity.ok(new RestError(car));
                             }
-                            log.error("The car is already");
-                            return ResponseEntity.badRequest().body(new RestError(3, "Машина уже имеется"));
+                            errMess = "The car is already exist";
+                            log.error("< registration with error = {}", errMess);
+                            return ResponseEntity.badRequest().body(new RestError(3, errMess));
                         }
-                        log.error("not suitable categories");
-                        return ResponseEntity.badRequest().body(new RestError(5, "не подходящие категории"));
+                        errMess = "not suitable categories";
+                        log.error("< registration with error = {}", errMess);
+                        return ResponseEntity.badRequest().body(new RestError(5, errMess));
                     }
-                    log.error("Driver not found");
-                    return ResponseEntity.badRequest().body(new RestError(4, "водителя не существует"));
+                    errMess = "Driver not found";
+                    log.error("< registration with error = {}", errMess);
+                    return ResponseEntity.badRequest().body(new RestError(4, errMess));
                 } catch (NullPointerException e) {
+                    log.warn("driverId is null");
                     Car car = carService.registration(carId, category, null);
                     if (car != null) {
-                        log.info("registration end");
+                        log.info("< registration");
                         return ResponseEntity.ok(new RestError(car));
                     }
-                    log.error("The car is already");
-                    return ResponseEntity.badRequest().body(new RestError(3, "Машина уже имеется"));
+                    errMess = "The car is already exist";
+                    log.error("< registration with error = {}", errMess);
+                    return ResponseEntity.badRequest().body(new RestError(3, errMess));
                 }
             }
-            log.error("Empty data");
-            return ResponseEntity.badRequest().body(new RestError(2, "Пустые данные"));
+            errMess = "empty data";
+            log.error("< registration with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(2, errMess));
         } catch (Exception e) {
-            log.error("Unknown error");
-            return ResponseEntity.badRequest().body(new RestError(1, "ошибка "));
+            log.error("< registration with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(1, errMess));
         }
     }
 
     @DeleteMapping(value = "/delete")
     public ResponseEntity<RestError> deleteCar(@RequestParam Long id) {
-        Car car = carRepo.findById(id).orElse(null);
-        if (car == null) {
-            return ResponseEntity.badRequest().body(new RestError(1, "Нету такого автомобиля"));
-        }
+        log.info("> deleteCar with id)={}", id);
         try {
-            carRepo.delete(car);
-            return ResponseEntity.ok(new RestError("OK"));
+            Car car = carRepo.findById(id).orElse(null);
+            if (car != null) {
+                carRepo.delete(car);
+                log.info("< deleteCar");
+                return ResponseEntity.ok(new RestError("OK"));
+            }
+            errMess = "Car not found";
+            log.error("< deleteCar with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(6, errMess));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new RestError(3, "Ошибка"));
+            log.error("< deleteCar with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(1, errMess));
         }
     }
 
     @PutMapping(value = "/edit")
     public ResponseEntity<RestError> editCarById(@RequestBody String json) {
-        JsonObject jo = Parser.parser.parse(json).getAsJsonObject();
-        Long id = jo.get("id").getAsLong();
-        String newCarId = jo.get("newCarId").getAsString();
-        Car oldCar = carRepo.findById(id).orElse(null);
-        if (oldCar == null) {
-            return ResponseEntity.badRequest().body(new RestError(1, "Машины существует не существует"));
-        }
+        log.info("> editCarById with json)={}", json);
         try {
-            Car car = carService.editCarById(
-                    oldCar,
-                    newCarId
-            );
-            return ResponseEntity.ok(new RestError(car));
+            JsonObject jo = Parser.parser.parse(json).getAsJsonObject();
+            Long id = jo.get("id").getAsLong();
+            String newCarId = jo.get("newCarId").getAsString();
+            Car oldCar = carRepo.findById(id).orElse(null);
+            if (oldCar != null) {
+                Car car = carService.editCarById(oldCar, newCarId);
+                log.info("< editCarById");
+                return ResponseEntity.ok(new RestError(car));
+            }
+            errMess = "Car not found";
+            log.error("< editCarById with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(6, errMess));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new RestError(2, "Ошибка"));
+            log.error("< editCarById with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(1, errMess));
         }
     }
 
     @GetMapping("/get-car-by-id")
     public ResponseEntity<RestError> getCarById(@RequestParam Long id) {
-        Car car = carRepo.findById(id).orElse(null);
-        if (car == null) {
-            return ResponseEntity.badRequest().body(new RestError(1, "Нету такого автомобиля"));
-        }
+        log.info("> getCarById with id)={}", id);
         try {
-            return ResponseEntity.ok(new RestError(car));
+            Car car = carRepo.findById(id).orElse(null);
+            if (car != null) {
+                log.info("< getCarById");
+                return ResponseEntity.ok(new RestError(car));
+            }
+            errMess = "Car not found";
+            log.error("< getCarById with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(6, errMess));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new RestError(2, "Ошибка"));
+            log.error("< getCarById with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(1, errMess));
         }
     }
 
     @GetMapping("/all")
-    public ResponseEntity<RestError> getAll() {
+    public ResponseEntity<RestError> getAllCar() {
+        log.info("> getAllCar");
         try {
+            log.info("< getAllCar");
             return ResponseEntity.ok(new RestError(carRepo.findAll()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new RestError(1, "Ошибка"));
+            log.error("< getAll with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(1, errMess));
         }
     }
 
     @GetMapping("/without-driver")
     public ResponseEntity<RestError> getWithoutDriver() {
-        return ResponseEntity.ok(new RestError(carRepo.findCarsWithoutDriver()));
+        log.info("> getWithoutDriver");
+        try {
+            log.info("< getWithoutDriver");
+            return ResponseEntity.ok(new RestError(carRepo.findCarsWithoutDriver()));
+        } catch (Exception e) {
+            log.error("< getWithoutDriver with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(1, errMess));
+        }
     }
 
 
     @GetMapping("/get-drivers-by-category-car")
     public ResponseEntity<RestError> getDriversByCategoryCar(@RequestParam Long id) {
-        Car car = carRepo.findById(id).orElse(null);
-        if (car != null) {
-            try {
-                List<Driver> drivers = new ArrayList<Driver>();
-                driverRepo.findAll().forEach(driver -> {
-                    if (car.getCategory().equals(driver.getCategory())) drivers.add(driver);
-                });
-                return ResponseEntity.ok(new RestError(drivers));
-            } catch (Exception e) {
-                return ResponseEntity.badRequest().body(new RestError(2, "Ошибка поиска по категориям"));
+        log.info("> getDriversByCategoryCar with id)={}", id);
+        try {
+            Car car = carRepo.findById(id).orElse(null);
+            if (car != null) {
+                try {
+                    List<Driver> drivers = new ArrayList<Driver>();
+                    driverRepo.findAll().forEach(driver -> {
+                        if (car.getCategory().equals(driver.getCategory())) drivers.add(driver);
+                    });
+                    log.info("<  getDriversByCategoryCar");
+                    return ResponseEntity.ok(new RestError(drivers));
+                } catch (Exception e) {
+                    errMess = "not suitable categories";
+                    log.error("< getDriversByCategoryCar with error = {}", errMess);
+                    return ResponseEntity.badRequest().body(new RestError(5, errMess));
+                }
+            } else {
+                errMess = "Car not found";
+                log.error("< getDriversByCategoryCar with error = {}", errMess);
+                return ResponseEntity.badRequest().body(new RestError(6, errMess));
             }
-        } else {
-            return ResponseEntity.badRequest().body(new RestError(1, "Нету такого автомобиля"));
+        } catch (Exception e) {
+            log.error("< getDriversByCategoryCar with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(1, errMess));
         }
     }
 }

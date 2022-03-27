@@ -100,22 +100,22 @@ public class DriverController {
 
     @GetMapping(value = "/without-cars")
     public ResponseEntity<RestError> withoutCars() {
-        return ResponseEntity.ok(new RestError(driverService.withoutCars()));
+            return ResponseEntity.ok(new RestError(driverService.withoutCars()));
     }
 
     @DeleteMapping(value = "/delete")
     public ResponseEntity<RestError> deleteDriver(@RequestParam Long id) {
-        Driver driver = driverRepo.findById(id).orElse(null);
-        if (driver != null) {
-            List<Car> cars = carRepo.findCarsByDriverId(driver.getId());
-            cars.forEach(car -> {
-                car.setDriverId(null);
-                carRepo.save(car);
-            });
-            driverRepo.delete(driver);
-            return ResponseEntity.ok(new RestError("OK"));
-        }
-        return ResponseEntity.badRequest().body(new RestError(1, "Несуществующий водитель"));
+            Driver driver = driverRepo.findById(id).orElse(null);
+            if (driver != null) {
+                List<Car> cars = carRepo.findCarsByDriverId(driver.getId());
+                cars.forEach(car -> {
+                    car.setDriverId(null);
+                    carRepo.save(car);
+                });
+                driverRepo.delete(driver);
+                return ResponseEntity.ok(new RestError("OK"));
+            }
+            return ResponseEntity.badRequest().body(new RestError(1, "Несуществующий водитель"));
     }
 
     @GetMapping(value = "/driver-cars")
