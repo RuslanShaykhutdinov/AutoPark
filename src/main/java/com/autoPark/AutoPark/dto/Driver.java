@@ -73,16 +73,6 @@ public class Driver {
     public void setCategory(Category category) {
         this.category = category;
     }
-/*
-
-    public ArrayList<Car> getCars() {
-        return cars;
-    }
-
-    public void setCars(ArrayList<Car> cars) {
-        this.cars = cars;
-    }
-*/
 
     @Override
     public boolean equals(Object o) {

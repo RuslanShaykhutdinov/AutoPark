@@ -24,8 +24,8 @@ public class CarService {
     public Car registration(String carId, Category category, Long driverId) {
         log.info("> registration");
         try {
-            Car car = new Car(carId, category, driverId);
             if (carRepo.findByCarId(carId) == null) {
+                Car car = new Car(carId, category, driverId);
                 carRepo.save(car);
                 log.info("< registration");
                 return car;
@@ -33,13 +33,13 @@ public class CarService {
             errMess = "The car is already exist";
         } catch (PatternSyntaxException e){
             errMess = "RegEx not suitable";
-        } /* catch (Exception e){
-        }*/
+        }
         log.error("< registration with error = {}", errMess);
         return null;
     }
 
     public Car editCarById(Car car, String newCarId) {
+        log.info("> editCarById");
         try {
             car.setCarId(newCarId);
             carRepo.save(car);
@@ -47,8 +47,7 @@ public class CarService {
             return car;
         } catch (PatternSyntaxException e){
             errMess = "RegEx not suitable";
-        } /* catch (Exception e){
-        }*/
+        }
         log.error("< RegEx not suitable with error = {}", errMess);
         return null;
     }
