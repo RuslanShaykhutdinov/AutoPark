@@ -5,180 +5,253 @@ import com.autoPark.AutoPark.dto.Car;
 import com.autoPark.AutoPark.dto.Driver;
 import com.autoPark.AutoPark.repos.CarRepo;
 import com.autoPark.AutoPark.repos.DriverRepo;
-import com.autoPark.AutoPark.service.CarService;
 import com.autoPark.AutoPark.service.DriverService;
+import com.autoPark.AutoPark.utils.Parser;
 import com.autoPark.AutoPark.utils.RestError;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
 @RestController
 @RequestMapping("/Driver")
 public class DriverController {
-    JsonParser parser = new JsonParser(); //TODO вынести в Utils
+    private static final Logger log = LoggerFactory.getLogger(DriverController.class);
     private final DriverRepo driverRepo;
     private final DriverService driverService;
     private final CarRepo carRepo;
-    private final CarService carService; //TODO убрать не используется
-
-    public DriverController(DriverRepo driverRepo, DriverService driverService, CarRepo carRepo, CarService carService) {
+    private String errMess = "Unknown error";
+    public DriverController(DriverRepo driverRepo, DriverService driverService, CarRepo carRepo) {
         this.driverRepo = driverRepo;
         this.driverService = driverService;
         this.carRepo = carRepo;
-        this.carService = carService;
     }
-    //TODO добавить логи ко всем методам и сделать у каждой ошибки свой номер!
-    //TODO use kebab-case for controller methods i.e /get-by-id
 
     @PostMapping(value = "/registration")
     public ResponseEntity<RestError> registration(@RequestBody String json) {
+        log.info("> registration with json = {}", json);
         try {
-            JsonObject jo = parser.parse(json).getAsJsonObject();
+            JsonObject jo = Parser.parser.parse(json).getAsJsonObject();
             String passportId = jo.get("passportId").getAsString();
             String name = jo.get("name").getAsString();
-            Category category = Category.valueOf(jo.get("category").getAsString().toUpperCase(Locale.ROOT)); //TODO добавить проверку что не нулл
-                Driver driver = new Driver(passportId, name, category);
-                if (driverService.registration(driver)) return ResponseEntity.ok(new RestError(driver));
-                return ResponseEntity.badRequest().body(new RestError(3, "Уже имеется"));
+            Category category = null;
+            try {
+                category = Category.valueOf(jo.get("category").getAsString().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                log.warn("wrong category");
+            }
+            if (passportId != null && name != null && category != null) {
+                Driver driver = driverService.registration(passportId, name, category);
+                if (driver != null){
+                    log.info("< registration");
+                    return ResponseEntity.ok(new RestError(driver));
+                }else{
+                    errMess = "Driver already exist";
+                    log.info("< registration with error = {}", errMess);
+                    return ResponseEntity.badRequest().body(new RestError(7, errMess));
+                }
+            }else{
+                errMess = "empty data";
+                log.info("< registration with error = {}", errMess);
+                return ResponseEntity.badRequest().body(new RestError(2, errMess));
+            }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new RestError(1, "Возможно ошибка в парсинге"));
+            log.info("< registration with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(1, errMess));
         }
     }
 
     @GetMapping("/all")
     public ResponseEntity<RestError> getAll() {
+        log.info("> getAll");
         try {
+            log.info("< getAll");
             return ResponseEntity.ok(new RestError(driverRepo.findAll()));
         } catch (Exception e) {
+            log.info("< getAll with error={}", errMess);
             return ResponseEntity.badRequest().body(new RestError(1, "Ошибка"));
         }
     }
 
-    @GetMapping("/getById")
+    @GetMapping("/get-by-id")
     public ResponseEntity<RestError> getById(@RequestParam Long id) {
+        log.info("> getById with id = {}", id);
         try {
             Driver driver = driverRepo.findById(id).orElse(null);
-            if (driver != null)
+            if (driver != null){
+                log.info("< getById");
                 return ResponseEntity.ok(new RestError(driver));
-            return ResponseEntity.badRequest().body(new RestError(2, "Не найден"));
+            }else{
+                errMess = "not found";
+                log.info("< getById(drivers) with error ={}", errMess);
+                return ResponseEntity.badRequest().body(new RestError(2, errMess));
+            }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new RestError(1, "Не известная ошибка"));
+            log.info("< getById with error ={}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(1, errMess));
         }
     }
 
     @PutMapping("/edit")
     public ResponseEntity<RestError> editDriver(@RequestParam Long id, @RequestBody String json) {
+        log.info("> editDriver with id = {}, json = {}", id, json);
         try {
-            JsonObject jo = parser.parse(json).getAsJsonObject();
+            JsonObject jo = Parser.parser.parse(json).getAsJsonObject();
             String passportId = jo.get("passportId").getAsString();
             String name = jo.get("name").getAsString();
-            if (passportId!=null && name!=null) {
-                if (driverService.editDriver(id, passportId , name)) return ResponseEntity.ok(new RestError("Ok")); //TODO return object instead
-                return ResponseEntity.badRequest().body(new RestError(3, "Водителя не существует"));
+            if (passportId != null && name != null) {
+                Driver newDriver = driverService.editDriver(id, passportId, name);
+                if (newDriver != null){
+                    log.info("< editDriver");
+                    return ResponseEntity.ok(new RestError(newDriver));
+                }else{
+                    errMess = "Driver doesn't exist";
+                    log.info("< editDriver with error = {}", errMess);
+                    return ResponseEntity.badRequest().body(new RestError(8, errMess));
+                }
+            }else {
+                errMess = "Wrong input";
+                log.info("< editDriver with error = {}", errMess);
+                return ResponseEntity.badRequest().body(new RestError(2, "Не верные данные"));
             }
-            return ResponseEntity.badRequest().body(new RestError(2, "Не верные данные"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new RestError(1, "Возможно ошибка в парсинге"));
+            log.info("< editDriver with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(1, errMess));
         }
     }
 
-    @GetMapping(value = "/getByPassport")
+    @GetMapping(value = "/get-by-passport")
     public ResponseEntity<RestError> getByPassport(@RequestParam String passportId) {
+        log.info("> getByPassport with passportId = {}", passportId);
         try {
             Driver driver = driverRepo.findByPassportId(passportId);
-            if (driver != null)
+            if (driver != null){
+                log.info("< getByPassport");
                 return ResponseEntity.ok(new RestError(driver));
-            return ResponseEntity.badRequest().body(new RestError(2, "Не найден"));
+            }else{
+                errMess = "Driver not found";
+                log.info("< getByPassport with error = {}", errMess);
+                return ResponseEntity.badRequest().body(new RestError(4, errMess));
+            }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new RestError(1, "Не известная ошибка"));
+            log.info("< getByPassport with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(1, errMess));
         }
     }
 
-    @GetMapping(value = "/withoutCars")
+    @GetMapping(value = "/without-cars")
     public ResponseEntity<RestError> withoutCars() {
-        HashSet<Long> driversWithCars= new HashSet<>(); //TODO use set instead and do logic in service
-        carRepo.carsWithDriver().forEach(car -> {
-            driversWithCars.add(car.getDriverId());
-        });
-        ArrayList<Driver> drivers=new ArrayList<>(); // may be List will be better
-        driverRepo.findAll().forEach(driver -> {
-            if (!(driversWithCars.contains(driver.getId())))
-                drivers.add(driver);
-        });
-        return ResponseEntity.ok(new RestError(drivers));
+        log.info("> withoutCars");
+        return ResponseEntity.ok(new RestError(driverService.withoutCars()));
     }
 
     @DeleteMapping(value = "/delete")
     public ResponseEntity<RestError> deleteDriver(@RequestParam Long id) {
+        log.info("> deleteDriver with id = {}", id);
         Driver driver = driverRepo.findById(id).orElse(null);
         if (driver != null) {
-            List<Car> cars=carRepo.findCarsByDriverId(driver.getId());
-            cars.forEach( car -> {
+            List<Car> cars = carRepo.findCarsByDriverId(driver.getId());
+            cars.forEach(car -> {
                 car.setDriverId(null);
                 carRepo.save(car);
             });
             driverRepo.delete(driver);
+            log.info("< deleteDriver");
             return ResponseEntity.ok(new RestError("OK"));
         }
-        return ResponseEntity.badRequest().body(new RestError(1, "Несуществующий водитель"));
+        errMess = "Driver not found";
+        log.info("< deleteDriver with error = {}", errMess);
+        return ResponseEntity.badRequest().body(new RestError(4, errMess));
     }
-      
-    @GetMapping(value = "/driverCars")
-    public ResponseEntity<RestError> driverCars(@RequestParam Long Id){ //TODO use camelCase for params
-        List<Car> carsList = carRepo.findCarsByDriverId(Id);
-        if(carsList.isEmpty()){
-            return ResponseEntity.badRequest().body(new RestError(1,"У данного водителя нету автомобилей"));
-        }else{
+
+    @GetMapping(value = "/driver-cars")
+    public ResponseEntity<RestError> driverCars(@RequestParam Long id) {
+        log.info("> driverCars with id = {}", id);
+        List<Car> carsList = carRepo.findCarsByDriverId(id);
+        if (carsList.isEmpty()) {
+            errMess = "This driver doesn't have any cars";
+            log.info("< driverCars with message = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(9, errMess));
+        } else {
+            log.info("< driverCars");
             return ResponseEntity.ok(new RestError(carsList));
         }
     }
-    
-    @PutMapping(value = "/pinDriver")
-    public ResponseEntity<RestError> pinDriver(@RequestBody String json){
-        JsonObject jo = parser.parse(json).getAsJsonObject();
-        String passportId = jo.get("PassportId").getAsString(); //TODO use camelCase
-        String carId = jo.get("CarId").getAsString(); //TODO use camelCase
+
+    @PutMapping(value = "/pin-driver")
+    public ResponseEntity<RestError> pinDriver(@RequestBody String json) {
+        log.info("> pinDriver with json = {}", json);
+        JsonObject jo = Parser.parser.parse(json).getAsJsonObject();
+        String passportId = jo.get("passportId").getAsString();
+        String carId = jo.get("carId").getAsString();
         Car car = carRepo.findByCarId(carId);
         Driver driver = driverRepo.findByPassportId(passportId);
-        if (passportId == null){  //TODO убрать не нужно
-            return ResponseEntity.badRequest().body(new RestError(1,"Введите номер пасспорта"));
-        }else if(driver == null){ //TODO это оставь
-            return ResponseEntity.badRequest().body(new RestError(2,"Такого водителя не существует"));
+        if (driver == null) {
+            errMess = "Driver not found";
+            log.info("< pinDriver with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(4, errMess));
         }
-        if(carId == null){ //TODO убрать не нужно
-            return ResponseEntity.badRequest().body(new RestError(3,"Введите номер автомобиля"));
-        }else if(car == null){ //TODO это оставь
-            return ResponseEntity.badRequest().body(new RestError(4,"Данного автомобиля не существует"));
+        if (car == null) {
+            errMess = "Car not found";
+            log.info("< pinDriver with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(6, errMess));
         }
-        if(!car.getCategory().equals(driver.getCategory())){
-            return ResponseEntity.badRequest().body(new RestError(5,"Данный водитель не может водить данный автомобиль"));
+        if (!car.getCategory().equals(driver.getCategory())) {
+            errMess = "not suitable categories";
+            log.info("< pinDriver with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(5, errMess));
         }
         try {
-             driverService.pinDriverToCar(car,driver);
-             return ResponseEntity.ok(new RestError("OK"));
-        }catch (Exception e){
-            return ResponseEntity.badRequest().body(new RestError(6,"Ошибка"));
+            driverService.pinDriverToCar(car, driver);
+            log.info("< pinDriver");
+            return ResponseEntity.ok(new RestError("OK"));
+        } catch (Exception e) {
+            log.info("< pinDriver with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(1, "Ошибка"));
         }
     }
 
-    @PutMapping(value = "/unpinDriver")
-    public ResponseEntity<RestError> unpinDriver(@RequestBody String json){
-        JsonObject jo = parser.parse(json).getAsJsonObject();
-        String passportId = jo.get("PassportId").getAsString(); //TODO use camelCase
-        String carId = jo.get("CarId").getAsString(); //TODO use camelCase
-        Car car = carRepo.findByCarId(carId);
-        Driver driver = driverRepo.findByPassportId(passportId);
-        if(car.getDriverId() == driver.getId()){ //TODO equals
-            driverService.unpinDriverFromCar(car);
-            return ResponseEntity.ok(new RestError("OK"));
+    @PutMapping(value = "/unpin-driver")
+    public ResponseEntity<RestError> unpinDriver(@RequestBody String json) {
+        log.info("> unpinDriver with json ={}",json);
+        JsonObject jo = Parser.parser.parse(json).getAsJsonObject();
+        String passportId = jo.get("passportId").getAsString();
+        String carId = jo.get("carId").getAsString();
+        Car car = null;
+        Driver driver = null;
+        if(carId != null && passportId != null){
+            car = carRepo.findByCarId(carId);
+            driver = driverRepo.findByPassportId(passportId);
         }else{
-            return ResponseEntity.badRequest().body(new RestError(1,"Ошибка"));
+            errMess = "empty data";
+            log.info("< unpinDriver with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(2, errMess));
+        }
+        if(car == null){
+            errMess = "Car not found";
+            log.info("< unpinDriver with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(6, errMess));
+        } else if(driver == null){
+            errMess = "Driver not found";
+            log.info("< unpinDriver with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(4, errMess));
+        }
+        if(!car.getDriverId().equals(driver.getId())) {
+            errMess = "This car doesn't pinned to this driver";
+            log.info("< unpinDriver with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(10, errMess));
+        }
+        try{
+            driverService.unpinDriverFromCar(car);
+            log.info("< unpinDriver");
+            return ResponseEntity.ok(new RestError("OK"));
+        } catch (Exception e){
+            log.info("< unpinDriver with error = {}", errMess);
+            return ResponseEntity.badRequest().body(new RestError(1, errMess));
         }
     }
 }

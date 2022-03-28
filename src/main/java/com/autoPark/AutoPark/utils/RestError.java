@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
  * Оболочка для отправки
  * @author HououinKyoma2000
  */
-//@Component
+
 public class RestError {
     @Value("0")
     private int error;
