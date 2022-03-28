@@ -63,12 +63,12 @@ public class DriverController {
 
     @GetMapping("/all")
     public ResponseEntity<RestError> getAll() {
-        log.info("> getAll(drivers)");
+        log.info("> getAll");
         try {
-            log.info("< getAll(drivers)");
+            log.info("< getAll");
             return ResponseEntity.ok(new RestError(driverRepo.findAll()));
         } catch (Exception e) {
-            log.info("< getAll(drivers) with unknown error");
+            log.info("< getAll with error={}", errMess);
             return ResponseEntity.badRequest().body(new RestError(1, "Ошибка"));
         }
     }
@@ -87,7 +87,7 @@ public class DriverController {
                 return ResponseEntity.badRequest().body(new RestError(2, errMess));
             }
         } catch (Exception e) {
-            log.info("< getById(drivers) with error ={}",errMess);
+            log.info("< getById with error ={}",errMess);
             return ResponseEntity.badRequest().body(new RestError(1, errMess));
         }
     }
